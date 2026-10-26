@@ -1,0 +1,7 @@
+build/
+build-*/
+installer/Output/
+dist/
+*.zip
+.vs/
+.vscode/
