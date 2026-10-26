@@ -1,5 +1,6 @@
 #include "PluginEditor.h"
 #include "Presets.h"
+#include "BinaryData.h"
 
 // ======================================================================== flow strip
 juce::Rectangle<float> FlowStrip::blockRect (int i) const
@@ -114,36 +115,23 @@ void DC6Editor::MidiChart::paint (juce::Graphics& g)
 DC6Editor::DC6Editor (DC6Processor& p) : AudioProcessorEditor (&p), proc (p)
 {
     setLookAndFeel (&lnf);
+    logo = juce::ImageCache::getFromMemory (BinaryData::logo_png, BinaryData::logo_pngSize);
     addAndMakeVisible (root);
     root.setSize (baseW, baseH);
     root.painter = [this] (juce::Graphics& g)
     {
         g.fillAll (col::bg);
 
-        // logo with a fractured, sliced look
-        auto r = logoArea.toFloat();
-        const juce::Font f (juce::FontOptions (30.0f, juce::Font::bold));
-        juce::GlyphArrangement ga;
-        ga.addLineOfText (f, "DECONSTRUCT", r.getX(), r.getCentreY() + 10.0f);
-        juce::Path word;
-        ga.createPath (word);
-        const auto wb = word.getBounds();
-        const float bands[] = { 0.0f, 0.22f, 0.31f, 0.58f, 0.66f, 1.0f };
-        const float shift[] = { 0.0f, 4.0f, 0.0f, -3.0f, 0.0f };
-        for (int i = 0; i < 5; ++i)
+        // logo artwork, fitted to the left of the header
+        if (logo.isValid())
         {
-            juce::Graphics::ScopedSaveState ss (g);
-            g.reduceClipRegion (juce::Rectangle<float> (wb.getX() - 10, wb.getY() + wb.getHeight() * bands[i],
-                                                         wb.getWidth() + 20, wb.getHeight() * (bands[i + 1] - bands[i])).toNearestInt());
-            g.setColour (col::text);
-            g.fillPath (word, juce::AffineTransform::translation (shift[i], 0.0f));
+            auto r = logoArea.toFloat();
+            const float scale = juce::jmin (r.getWidth() / (float) logo.getWidth(), r.getHeight() / (float) logo.getHeight());
+            const auto dest = juce::Rectangle<float> (r.getX(), r.getCentreY() - logo.getHeight() * scale * 0.5f,
+                                                      logo.getWidth() * scale, logo.getHeight() * scale);
+            g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+            g.drawImage (logo, dest, juce::RectanglePlacement::stretchToFit);
         }
-        g.setColour (col::blood);
-        g.setFont (f);
-        g.drawText ("-6", (int) wb.getRight() + 4, (int) r.getY(), 40, (int) r.getHeight(), juce::Justification::centredLeft);
-        g.setColour (col::dim);
-        g.setFont (juce::FontOptions (10.5f));
-        g.drawText ("MEMPHIS  /  INDUSTRIAL  /  IDM  DESTRUCTION FX", (int) r.getX(), (int) r.getBottom() - 12, 360, 12, juce::Justification::centredLeft);
 
         // meters
         auto m = meterArea.toFloat();
@@ -324,8 +312,8 @@ void DC6Editor::resized()
     auto r = juce::Rectangle<int> (0, 0, baseW, baseH).reduced (14, 10);
 
     // header
-    auto head = r.removeFromTop (62);
-    logoArea = head.removeFromLeft (330).withSizeKeepingCentre (330, 54);
+    auto head = r.removeFromTop (70);
+    logoArea = head.removeFromLeft (330).expanded (0, 4);
     auto right = head.removeFromRight (330);
     outKnob->setBounds (right.removeFromRight (66).expanded (0, 6));
     inKnob->setBounds (right.removeFromRight (66).expanded (0, 6));

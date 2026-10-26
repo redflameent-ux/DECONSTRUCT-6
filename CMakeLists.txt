@@ -49,15 +49,18 @@ juce_add_plugin(DC6
     VST3_CATEGORIES Fx Distortion
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
+# Embedded artwork (the header logo)
+juce_add_binary_data(DC6Data SOURCES Resources/logo.png)
+
 target_sources(DC6 PRIVATE ${DC6_SOURCES})
 target_compile_definitions(DC6 PUBLIC ${DC6_DEFS})
 target_link_libraries(DC6
-    PRIVATE ${DC6_LIBS}
+    PRIVATE ${DC6_LIBS} DC6Data
     PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags juce::juce_recommended_warning_flags)
 
 if(DC6_BUILD_TESTS)
     juce_add_console_app(DC6Render PRODUCT_NAME "DC6Render")
     target_sources(DC6Render PRIVATE ${DC6_SOURCES} tools/RenderTest.cpp)
     target_compile_definitions(DC6Render PRIVATE ${DC6_DEFS} JUCE_STANDALONE_APPLICATION=1)
-    target_link_libraries(DC6Render PRIVATE ${DC6_LIBS} juce::juce_recommended_config_flags)
+    target_link_libraries(DC6Render PRIVATE ${DC6_LIBS} DC6Data juce::juce_recommended_config_flags)
 endif()

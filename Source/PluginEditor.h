@@ -33,7 +33,7 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    static constexpr int baseW = 1120, baseH = 712;
+    static constexpr int baseW = 1120, baseH = 720;
 
 private:
     void timerCallback() override;
@@ -76,6 +76,7 @@ private:
     juce::Rectangle<int> padArea;
 
     juce::String shownPreset;
+    juce::Image logo;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DC6Editor)
 };
